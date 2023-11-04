@@ -1,0 +1,58 @@
+﻿@model PROG7311_P2.Models.Product
+
+@{
+    ViewData["Title"] = "Add Product";
+}
+
+<h1 style="margin-top: 2rem;">Add A Product</h1>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="ProductName" class="control-label">Product Name</label>
+                <input asp-for="ProductName" class="form-control" />
+                <span asp-validation-for="ProductName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Quantity" class="control-label"></label>
+                <input asp-for="Quantity" class="form-control" min="1" step="1" value="1" />
+                <span asp-validation-for="Quantity" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Price" class="control-label">Price per item (ZAR)</label>
+                <input asp-for="Price" class="form-control" min="1.00" />
+                <span asp-validation-for="Price" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DateSupplied" class="control-label">Date Supplied</label>
+                <input asp-for="DateSupplied" class="form-control" type="date" value="@DateTime.Now" asp-format="{0:dd-MM-yyyy}" />
+                <span asp-validation-for="DateSupplied" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label for="TypeName" class="control-label">Type</label>
+                <select name="typeName" class="form-control">
+                    @foreach (var item in ViewBag.ProductTypes)
+                    {
+                        <option value="@item.Value">@item.Value</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group">
+                <label asp-for="Email" class="control-label" style="margin-top: 10px;"></label>
+                <input asp-for="Email" class="form-control" type="email" value="@Model.Email" readonly />
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="submit-btns" />
+            </div>
+        </form>
+    </div>
+</div>
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

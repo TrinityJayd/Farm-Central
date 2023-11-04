@@ -1,0 +1,28 @@
+﻿@{
+    ViewData["Title"] = "Home";
+}
+
+<div class="card mb-2" id="landing-container">
+    <div class="row g-0">
+        <div class="col-lg-7 col-md-7" id="large-screen-img1" style="display:none;">
+            <img src="images/landing.png" class="landing-img img-fluid rounded-start" alt="farmer girl">
+        </div>
+        <div class="col-lg-5 col-md-5">
+            <div class="card-body" id="landing-body">
+                <h1 class="landing-heading" style="color:#3BB273">FarmCentral</h1>
+                <h1 class="landing-heading">Management</h1>
+                <h1 class="landing-heading">System</h1>
+                <a asp-controller="Employees" asp-action="Create">
+                    <input type="submit" value="Employee Registration" class="submit-btns" style="width:12.5rem;" />
+                </a>
+                <a asp-controller="Employees" asp-action="Login">
+                    <input type="submit" value="Login" class="submit-btns login-btn" />
+                </a>
+            </div>
+        </div>
+
+        <div class="col-lg-7 col-md-7" id="large-screen-img2">
+            <img src="images/landing.png" class="landing-img img-fluid rounded-start" alt="farmer girl">
+        </div>
+    </div>
+</div>

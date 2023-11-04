@@ -1,0 +1,44 @@
+﻿@model PROG7311_P2.Models.LoginRegisterModel
+
+@{
+    ViewData["Title"] = "Login";
+}
+<div class="card mb-2">
+    <div class="row  g-0">
+        <div class="col-md-5">
+            <div class="card-body" id="login-body">
+                <h1>Login</h1>
+                <form asp-action="Login" class="login-frm">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="form-group">
+                        <label asp-for="Email" class="control-label"></label>
+                        <input asp-for="Email" class="form-control" type="email" required />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Password" class="control-label"></label>
+                        <input asp-for="Password" class="form-control" type="password" required />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <input id="login-btn" type="submit" value="Login" class="submit-btns" />
+                        <span class="text-danger"></span>
+                    </div>
+                 </form>
+            </div>
+        </div>
+
+        <div class=" col-md-7" id="large-screen-img">
+            <img src="~/images/login.png" class="login-img img-fluid rounded-start" alt="...">
+        </div>
+    </div>
+</div>
+
+
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    }

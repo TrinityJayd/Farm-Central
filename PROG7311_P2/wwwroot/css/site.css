@@ -1,0 +1,204 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat&family=Ubuntu:wght@500&display=swap');
+
+html {
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    margin-bottom: 60px;
+}
+
+label {
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+}
+
+input {
+    border-color: #3BB273;
+    margin-bottom: 10px;
+}
+
+th {
+    color: #3BB273;
+}
+
+/*Nav*/
+
+.nav-link:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-decoration-color: #3BB273;
+}
+
+/*Header*/
+
+.brand {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: bold;
+}
+
+
+/*Buttons*/
+.submit-btns {
+    background-color: #3BB273;
+    border: none;
+    color: white;
+    border-radius: 29px;
+    font-family: 'Ubuntu', sans-serif;
+    font-weight: 500;
+    height: 2.3rem;
+    margin-top: 10px;
+    width: 7rem;
+}
+
+    .submit-btns:hover {
+        background-color: #2f8e5c;
+    }
+
+/*Landing page*/
+
+.card {
+    border: none !important;
+    height: auto;
+}
+
+.card-body {
+    padding-top: 5rem;
+}
+
+.landing-heading {
+    font-size: 4rem;
+}
+
+.landing-img {
+    max-width: 700px;
+    height: 580px;
+}
+
+
+
+
+/*Login page*/
+
+#login-body {
+    padding-left: 3rem;
+}
+
+.login-btn {
+    background-color: white;
+    border-color: #3BB273;
+    border: 2px solid;
+    color: #3BB273;
+}
+
+    .login-btn:hover {
+        border: none;
+        color: white;
+    }
+
+.login-frm {
+    margin-top: 2rem;
+    margin-right: 2rem;
+}
+
+.login-img {
+    margin-left: 7rem;
+    width: 80%
+}
+
+/*Home page*/
+
+#home-img.card-img-top {
+    align-self: center;
+    width: 65%;
+}
+
+#home-btns {
+    margin-top: 2rem;
+    text-align: center;
+}
+
+.home-btn {
+    align-self: center;
+    margin-bottom: 10px;
+    width: 55%;
+}
+
+
+
+/*Media Queries*/
+
+@media (max-width: 1024px) {
+    .landing-heading {
+        font-size: 3rem;
+    }
+
+    .landing-img {
+        max-width: 600px;
+    }
+
+    .home-btn {
+        width: 80% !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .landing-heading {
+        font-size: 2rem;
+    }
+
+
+    .landing-img {
+        margin-left: 2rem;
+        max-width: 300px;
+        height: 300px;
+    }
+
+    .login-img {
+        width: 100%;
+        margin-left: 0;
+        padding-top: 10%;
+    }
+
+    .home-btn {
+        width: 80% !important;
+    }
+}
+
+@media (max-width: 425px) {
+    .landing-img {
+        height: 200px !important;
+        width: 200px !important;
+    }
+
+    #landing-container {
+        text-align: center !important;
+    }
+
+    #landing-body {
+        padding-top: 2rem !important;
+    }
+
+    #large-screen-img1 {
+        display: block !important;
+    }
+
+    #large-screen-img2 {
+        display: none !important;
+    }
+
+    .login-img {
+        display: none;
+    }
+}

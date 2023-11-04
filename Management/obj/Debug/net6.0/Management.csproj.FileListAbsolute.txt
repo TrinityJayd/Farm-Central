@@ -1,0 +1,12 @@
+C:\Users\lab_services_student\source\repos\PROG7311_P2\Management\bin\Debug\net6.0\Management.deps.json
+C:\Users\lab_services_student\source\repos\PROG7311_P2\Management\bin\Debug\net6.0\Management.dll
+C:\Users\lab_services_student\source\repos\PROG7311_P2\Management\bin\Debug\net6.0\Management.pdb
+C:\Users\lab_services_student\source\repos\PROG7311_P2\Management\obj\Debug\net6.0\Management.csproj.AssemblyReference.cache
+C:\Users\lab_services_student\source\repos\PROG7311_P2\Management\obj\Debug\net6.0\Management.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\lab_services_student\source\repos\PROG7311_P2\Management\obj\Debug\net6.0\Management.AssemblyInfoInputs.cache
+C:\Users\lab_services_student\source\repos\PROG7311_P2\Management\obj\Debug\net6.0\Management.AssemblyInfo.cs
+C:\Users\lab_services_student\source\repos\PROG7311_P2\Management\obj\Debug\net6.0\Management.csproj.CoreCompileInputs.cache
+C:\Users\lab_services_student\source\repos\PROG7311_P2\Management\obj\Debug\net6.0\Management.dll
+C:\Users\lab_services_student\source\repos\PROG7311_P2\Management\obj\Debug\net6.0\refint\Management.dll
+C:\Users\lab_services_student\source\repos\PROG7311_P2\Management\obj\Debug\net6.0\Management.pdb
+C:\Users\lab_services_student\source\repos\PROG7311_P2\Management\obj\Debug\net6.0\ref\Management.dll

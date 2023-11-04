@@ -1,0 +1,57 @@
+﻿@model PROG7311_P2.Models.Employee
+@{
+    ViewData["Title"] = "Home";
+}
+
+<!doctype html>
+<html lang="ar">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
+    <meta name="generator" content="Hugo 0.104.2">
+    <link rel="canonical" href="https://getbootstrap.com/docs/5.2/examples/album-rtl/">
+    <link href="css/bootstrap.rtl.min.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+</head>
+<body>
+    <main>
+        <div class="album py-5" style="padding-top:1.5rem">
+            <div class="container" style="margin: auto">
+                <div class="row row-cols-1 row-cols-sm-2 g-3">
+                    <div class="col">
+                        <div class="card">
+                            <img id="home-img" class="bd-placeholder-img card-img-top" height="225" src="~/images/undraw_Gardening_re_e658.png" preserveAspectRatio="xMidYMid slice" focusable="false">
+                            <a id="home-btns" asp-controller="Farmers" asp-action="Create">
+                                <input type="submit" value="Add Farmer" class="submit-btns home-btn" />
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card ">
+                            <img id="home-img" class="bd-placeholder-img card-img-top" height="225" src="~/images/undraw_Dropdown_menu_re_jqqs.png" preserveAspectRatio="xMidYMid slice" focusable="false">
+                            <a id="home-btns" asp-controller="Products" asp-action="Index">
+                                <input type="submit" value="View Products" class="submit-btns home-btn" />
+                            </a>
+                        </div>
+                    </div>
+                    
+
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script src="../wwwroot/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
