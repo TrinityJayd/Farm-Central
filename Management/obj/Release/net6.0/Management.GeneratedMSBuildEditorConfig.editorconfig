@@ -8,4 +8,6 @@ build_property.PlatformNeutralAssembly =
 build_property.EnforceExtendedAnalyzerRules = 
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = Management
-build_property.ProjectDir = C:\Users\lab_services_student\source\repos\PROG7311_P2\Management\
+build_property.ProjectDir = C:\Users\TrinityT\Source\Repos\TrinityJayd\Farm-Central\Management\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 

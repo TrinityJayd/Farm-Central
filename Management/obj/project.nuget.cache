@@ -1,18 +1,18 @@
 {
   "version": 2,
-  "dgSpecHash": "K3Ea2IN0bUYsBG4kBNK+jO4ZLz3Lefz/5DXe2C9rWl42MUNDNyXnym+ZBbNNswsbAhi60YuEi7otrSFMcZqLnQ==",
+  "dgSpecHash": "7/9S2hBiK8yQnO8QKquDlHrthfZ/ttL37WI/rTNE24Ld3ovl4hAnKMaTmJuMKA0f6EfJm0WDIIBFdC8wfkth1Q==",
   "success": true,
-  "projectFilePath": "C:\\Users\\lab_services_student\\source\\repos\\PROG7311_P2\\Management\\Management.csproj",
+  "projectFilePath": "C:\\Users\\TrinityT\\Source\\Repos\\TrinityJayd\\Farm-Central\\Management\\Management.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\lab_services_student\\.nuget\\packages\\firebaseadmin\\2.3.0\\firebaseadmin.2.3.0.nupkg.sha512",
-    "C:\\Users\\lab_services_student\\.nuget\\packages\\google.api.gax\\3.2.0\\google.api.gax.3.2.0.nupkg.sha512",
-    "C:\\Users\\lab_services_student\\.nuget\\packages\\google.api.gax.rest\\3.2.0\\google.api.gax.rest.3.2.0.nupkg.sha512",
-    "C:\\Users\\lab_services_student\\.nuget\\packages\\google.apis\\1.49.0\\google.apis.1.49.0.nupkg.sha512",
-    "C:\\Users\\lab_services_student\\.nuget\\packages\\google.apis.auth\\1.49.0\\google.apis.auth.1.49.0.nupkg.sha512",
-    "C:\\Users\\lab_services_student\\.nuget\\packages\\google.apis.core\\1.49.0\\google.apis.core.1.49.0.nupkg.sha512",
-    "C:\\Users\\lab_services_student\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\1.0.0\\microsoft.bcl.asyncinterfaces.1.0.0.nupkg.sha512",
-    "C:\\Users\\lab_services_student\\.nuget\\packages\\newtonsoft.json\\12.0.3\\newtonsoft.json.12.0.3.nupkg.sha512",
-    "C:\\Users\\lab_services_student\\.nuget\\packages\\system.collections.immutable\\1.7.1\\system.collections.immutable.1.7.1.nupkg.sha512"
+    "C:\\Users\\TrinityT\\.nuget\\packages\\firebaseadmin\\2.3.0\\firebaseadmin.2.3.0.nupkg.sha512",
+    "C:\\Users\\TrinityT\\.nuget\\packages\\google.api.gax\\3.2.0\\google.api.gax.3.2.0.nupkg.sha512",
+    "C:\\Users\\TrinityT\\.nuget\\packages\\google.api.gax.rest\\3.2.0\\google.api.gax.rest.3.2.0.nupkg.sha512",
+    "C:\\Users\\TrinityT\\.nuget\\packages\\google.apis\\1.49.0\\google.apis.1.49.0.nupkg.sha512",
+    "C:\\Users\\TrinityT\\.nuget\\packages\\google.apis.auth\\1.49.0\\google.apis.auth.1.49.0.nupkg.sha512",
+    "C:\\Users\\TrinityT\\.nuget\\packages\\google.apis.core\\1.49.0\\google.apis.core.1.49.0.nupkg.sha512",
+    "C:\\Users\\TrinityT\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\1.0.0\\microsoft.bcl.asyncinterfaces.1.0.0.nupkg.sha512",
+    "C:\\Users\\TrinityT\\.nuget\\packages\\newtonsoft.json\\12.0.3\\newtonsoft.json.12.0.3.nupkg.sha512",
+    "C:\\Users\\TrinityT\\.nuget\\packages\\system.collections.immutable\\1.7.1\\system.collections.immutable.1.7.1.nupkg.sha512"
   ],
   "logs": []
 }

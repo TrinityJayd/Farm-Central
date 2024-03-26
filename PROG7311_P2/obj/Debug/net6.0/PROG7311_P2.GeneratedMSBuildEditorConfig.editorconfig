@@ -9,65 +9,67 @@ build_property.EnforceExtendedAnalyzerRules =
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = PROG7311_P2
 build_property.RootNamespace = PROG7311_P2
-build_property.ProjectDir = C:\Users\lab_services_student\source\repos\PROG7311_P2\PROG7311_P2\
+build_property.ProjectDir = C:\Users\TrinityT\Source\Repos\TrinityJayd\Farm-Central\PROG7311_P2\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.RazorLangVersion = 6.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = C:\Users\lab_services_student\source\repos\PROG7311_P2\PROG7311_P2
+build_property.MSBuildProjectDirectory = C:\Users\TrinityT\Source\Repos\TrinityJayd\Farm-Central\PROG7311_P2
 build_property._RazorSourceGeneratorDebug = 
 
-[C:/Users/lab_services_student/source/repos/PROG7311_P2/PROG7311_P2/Views/Employees/Create.cshtml]
+[C:/Users/TrinityT/Source/Repos/TrinityJayd/Farm-Central/PROG7311_P2/Views/Employees/Create.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW1wbG95ZWVzXENyZWF0ZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/lab_services_student/source/repos/PROG7311_P2/PROG7311_P2/Views/Employees/Home.cshtml]
+[C:/Users/TrinityT/Source/Repos/TrinityJayd/Farm-Central/PROG7311_P2/Views/Employees/Home.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW1wbG95ZWVzXEhvbWUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/lab_services_student/source/repos/PROG7311_P2/PROG7311_P2/Views/Employees/Login.cshtml]
+[C:/Users/TrinityT/Source/Repos/TrinityJayd/Farm-Central/PROG7311_P2/Views/Employees/Login.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW1wbG95ZWVzXExvZ2luLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/lab_services_student/source/repos/PROG7311_P2/PROG7311_P2/Views/Farmers/ChangePassword.cshtml]
+[C:/Users/TrinityT/Source/Repos/TrinityJayd/Farm-Central/PROG7311_P2/Views/Farmers/ChangePassword.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRmFybWVyc1xDaGFuZ2VQYXNzd29yZC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/lab_services_student/source/repos/PROG7311_P2/PROG7311_P2/Views/Farmers/Create.cshtml]
+[C:/Users/TrinityT/Source/Repos/TrinityJayd/Farm-Central/PROG7311_P2/Views/Farmers/Create.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRmFybWVyc1xDcmVhdGUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/lab_services_student/source/repos/PROG7311_P2/PROG7311_P2/Views/Farmers/Home.cshtml]
+[C:/Users/TrinityT/Source/Repos/TrinityJayd/Farm-Central/PROG7311_P2/Views/Farmers/Home.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRmFybWVyc1xIb21lLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/lab_services_student/source/repos/PROG7311_P2/PROG7311_P2/Views/Home/Index.cshtml]
+[C:/Users/TrinityT/Source/Repos/TrinityJayd/Farm-Central/PROG7311_P2/Views/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/lab_services_student/source/repos/PROG7311_P2/PROG7311_P2/Views/Products/Create.cshtml]
+[C:/Users/TrinityT/Source/Repos/TrinityJayd/Farm-Central/PROG7311_P2/Views/Products/Create.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZHVjdHNcQ3JlYXRlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/lab_services_student/source/repos/PROG7311_P2/PROG7311_P2/Views/Products/Index.cshtml]
+[C:/Users/TrinityT/Source/Repos/TrinityJayd/Farm-Central/PROG7311_P2/Views/Products/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZHVjdHNcSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/lab_services_student/source/repos/PROG7311_P2/PROG7311_P2/Views/Shared/Error.cshtml]
+[C:/Users/TrinityT/Source/Repos/TrinityJayd/Farm-Central/PROG7311_P2/Views/Shared/Error.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/lab_services_student/source/repos/PROG7311_P2/PROG7311_P2/Views/Shared/_ValidationScriptsPartial.cshtml]
+[C:/Users/TrinityT/Source/Repos/TrinityJayd/Farm-Central/PROG7311_P2/Views/Shared/_ValidationScriptsPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/lab_services_student/source/repos/PROG7311_P2/PROG7311_P2/Views/_ViewImports.cshtml]
+[C:/Users/TrinityT/Source/Repos/TrinityJayd/Farm-Central/PROG7311_P2/Views/_ViewImports.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/lab_services_student/source/repos/PROG7311_P2/PROG7311_P2/Views/_ViewStart.cshtml]
+[C:/Users/TrinityT/Source/Repos/TrinityJayd/Farm-Central/PROG7311_P2/Views/_ViewStart.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdTdGFydC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/lab_services_student/source/repos/PROG7311_P2/PROG7311_P2/Views/Shared/_Layout.cshtml]
+[C:/Users/TrinityT/Source/Repos/TrinityJayd/Farm-Central/PROG7311_P2/Views/Shared/_Layout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = b-7m4dtzxqgx

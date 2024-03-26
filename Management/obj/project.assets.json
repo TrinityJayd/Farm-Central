@@ -356,19 +356,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\lab_services_student\\.nuget\\packages\\": {}
+    "C:\\Users\\TrinityT\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\lab_services_student\\source\\repos\\PROG7311_P2\\Management\\Management.csproj",
+      "projectUniqueName": "C:\\Users\\TrinityT\\Source\\Repos\\TrinityJayd\\Farm-Central\\Management\\Management.csproj",
       "projectName": "Management",
-      "projectPath": "C:\\Users\\lab_services_student\\source\\repos\\PROG7311_P2\\Management\\Management.csproj",
-      "packagesPath": "C:\\Users\\lab_services_student\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\lab_services_student\\source\\repos\\PROG7311_P2\\Management\\obj\\",
+      "projectPath": "C:\\Users\\TrinityT\\Source\\Repos\\TrinityJayd\\Farm-Central\\Management\\Management.csproj",
+      "packagesPath": "C:\\Users\\TrinityT\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\TrinityT\\Source\\Repos\\TrinityJayd\\Farm-Central\\Management\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\lab_services_student\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\TrinityT\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -388,6 +388,11 @@
         "warnAsError": [
           "NU1605"
         ]
+      },
+      "restoreAuditProperties": {
+        "enableAudit": "true",
+        "auditLevel": "low",
+        "auditMode": "direct"
       }
     },
     "frameworks": {
@@ -415,7 +420,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.302\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.200\\RuntimeIdentifierGraph.json"
       }
     }
   }
