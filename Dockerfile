@@ -16,4 +16,7 @@ RUN dotnet publish "PROG7311_P2.csproj" -c Release -o /app/publish
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+
+# Firebase credentials will be provided via FIREBASE_CREDENTIALS_JSON environment variable in production
+
 ENTRYPOINT ["dotnet", "PROG7311_P2.dll"] 

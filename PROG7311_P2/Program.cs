@@ -65,19 +65,30 @@ try
         var firebaseConfig = builder.Configuration.GetSection("Firebase");
         var credentialsPath = firebaseConfig["CredentialsPath"];
         
-        if (string.IsNullOrEmpty(credentialsPath))
-        {
-            throw new InvalidOperationException("Firebase credentials path is not configured");
-        }
+        GoogleCredential credential;
         
-        if (!File.Exists(credentialsPath))
+        // Check if we're in production (Render) and have environment variable credentials
+        var firebaseCredentialsJson = Environment.GetEnvironmentVariable("FIREBASE_CREDENTIALS_JSON");
+        if (!string.IsNullOrEmpty(firebaseCredentialsJson))
         {
-            throw new FileNotFoundException($"Firebase credentials file not found at: {credentialsPath}");
+            // Use environment variable credentials (production)
+            credential = GoogleCredential.FromJson(firebaseCredentialsJson);
+            Log.Information("Firebase initialized with environment variable credentials");
+        }
+        else if (!string.IsNullOrEmpty(credentialsPath) && File.Exists(credentialsPath))
+        {
+            // Use file-based credentials (development)
+            credential = GoogleCredential.FromFile(credentialsPath);
+            Log.Information("Firebase initialized with file-based credentials");
+        }
+        else
+        {
+            throw new InvalidOperationException("Firebase credentials not found. Set FIREBASE_CREDENTIALS_JSON environment variable or provide valid credentials file path.");
         }
         
         FirebaseApp.Create(new AppOptions()
         {
-            Credential = GoogleCredential.FromFile(credentialsPath)
+            Credential = credential
         });
         
         builder.Services.AddSingleton(FirebaseApp.DefaultInstance);
