@@ -91,7 +91,7 @@ This project is licensed under the MIT License.
 
 ## 👨‍💻 Author
 
-**Trinity** - [GitHub Profile](https://github.com/yourusername)
+**Trinity** - [GitHub Profile](https://github.com/TrinityJayd)
 
 ---
 
