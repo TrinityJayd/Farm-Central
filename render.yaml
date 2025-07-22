@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: farm-central
+    env: dotnet
+    plan: free
+    buildCommand: dotnet build PROG7311_P2/PROG7311_P2.csproj
+    startCommand: dotnet run --project PROG7311_P2/PROG7311_P2.csproj --urls http://0.0.0.0:$PORT
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ASPNETCORE_URLS
+        value: http://0.0.0.0:$PORT 
