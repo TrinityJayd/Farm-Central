@@ -54,18 +54,18 @@ namespace PROG7311_P2.Services
                     {
                         var product = JsonSerializer.Deserialize<Product>(element.GetRawText());
                         if (product != null)
-                        {
+                            {
                             product.Id = i;
                             products.Add(product);
+                            }
                         }
                     }
-                }
 
                 if (products.Any())
                 {
-                    await PopulateProductTypesAsync(products);
-                    _logger.LogInformation("Retrieved {Count} products from Firebase", products.Count);
-                    return products;
+                await PopulateProductTypesAsync(products);
+                _logger.LogInformation("Retrieved {Count} products from Firebase", products.Count);
+                return products;
                 }
                 else
                 {
@@ -103,14 +103,14 @@ namespace PROG7311_P2.Services
                             item.Object.Id = id;
                         }
                         products.Add(item.Object);
-                    }
-                }
+                            }
+                        }
 
                 if (products.Any())
                 {
-                    await PopulateProductTypesAsync(products);
-                    _logger.LogInformation("Retrieved {Count} products for farmer {FarmerEmail}", products.Count, farmerEmail);
-                    return products;
+                await PopulateProductTypesAsync(products);
+                _logger.LogInformation("Retrieved {Count} products for farmer {FarmerEmail}", products.Count, farmerEmail);
+                return products;
                 }
                 else
                 {
@@ -283,7 +283,7 @@ namespace PROG7311_P2.Services
                     {
                         var productType = JsonSerializer.Deserialize<ProductType>(element.GetRawText());
                         if (productType != null)
-                        {
+                            {
                             productType.TypeId = i;
                             productTypes.Add(productType);
                         }
@@ -366,7 +366,7 @@ namespace PROG7311_P2.Services
                     {
                         var farmer = JsonSerializer.Deserialize<Farmer>(element.GetRawText());
                         if (farmer != null)
-                        {
+                            {
                             farmer.Id = i.ToString();
                             farmers.Add(farmer);
                         }
@@ -447,7 +447,7 @@ namespace PROG7311_P2.Services
                     {
                         var employee = JsonSerializer.Deserialize<Employee>(element.GetRawText());
                         if (employee != null)
-                        {
+                            {
                             employee.Id = i.ToString();
                             employees.Add(employee);
                         }

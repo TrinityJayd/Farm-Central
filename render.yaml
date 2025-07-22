@@ -1,10 +1,9 @@
 services:
   - type: web
     name: farm-central
-    env: dotnet
+    env: docker
     plan: free
-    buildCommand: dotnet build PROG7311_P2/PROG7311_P2.csproj
-    startCommand: dotnet run --project PROG7311_P2/PROG7311_P2.csproj --urls http://0.0.0.0:$PORT
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: ASPNETCORE_ENVIRONMENT
         value: Production
