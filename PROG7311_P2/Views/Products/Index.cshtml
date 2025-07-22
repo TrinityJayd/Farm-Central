@@ -20,9 +20,12 @@
                     <label for="Farmer" class="control-label">Farmer</label>
                     <select name="farmer" class="form-control">
                         <option value="All">All Farmers</option>
-                        @foreach (var item in farmers)
+                        @if (farmers != null)
                         {
-                            <option value="@item.ToString()">@item.ToString()</option>
+                            @foreach (var item in farmers)
+                            {
+                                <option value="@item.ToString()">@item.ToString()</option>
+                            }
                         }
                     </select>
                 </div>
@@ -40,9 +43,12 @@
             <label for="TypeName" class="control-label">Type</label>
             <select name="typeName" class="form-control">
                 <option value="All">All</option>
-                @foreach (var item in typeNames)
+                @if (typeNames != null)
                 {
-                    <option value="@item.ToString()">@item.ToString()</option>
+                    @foreach (var item in typeNames)
+                    {
+                        <option value="@item.ToString()">@item.ToString()</option>
+                    }
                 }
             </select>
         </div>

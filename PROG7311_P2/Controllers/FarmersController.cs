@@ -3,92 +3,107 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Firebase.Auth;
-using Management;
+using PROG7311_P2.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using PROG7311_P2.Models;
+using PROG7311_P2.Services;
 using FirebaseAdmin.Auth;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Model;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 
 namespace PROG7311_P2.Controllers
 {
     public class FarmersController : Controller
     {
-        private readonly Progp2Context _context;
-        private readonly FirebaseAdmin.Auth.FirebaseAuth auth;
-        private readonly FirebaseAuthProvider authUser;
+        private readonly IUserService _userService;
+        private readonly FirebaseAdmin.Auth.FirebaseAuth _auth;
+        private readonly FirebaseAuthProvider _authUser;
+        private readonly ILogger<FarmersController> _logger;
+        private readonly IConfiguration _configuration;
 
-        public FarmersController(Progp2Context context)
+        public FarmersController(IUserService userService, ILogger<FarmersController> logger, IConfiguration configuration)
         {
-            _context = context;
-            auth = FirebaseAdmin.Auth.FirebaseAuth.DefaultInstance;
-            authUser = new FirebaseAuthProvider(new FirebaseConfig("AIzaSyChY24wbV9v40wp4wNzIlFM9BX1auUZQUk"));
+            _userService = userService;
+            _logger = logger;
+            _configuration = configuration;
+            _auth = FirebaseAdmin.Auth.FirebaseAuth.DefaultInstance;
+            
+            var firebaseApiKey = _configuration["Firebase:ApiKey"];
+            if (string.IsNullOrEmpty(firebaseApiKey))
+            {
+                throw new InvalidOperationException("Firebase API key is not configured");
+            }
+            _authUser = new FirebaseAuthProvider(new FirebaseConfig(firebaseApiKey));
         }
 
-
-        public IActionResult Home()
+        public async Task<IActionResult> Home()
         {
-            //get uid
-            var uid = HttpContext.Session.GetString("_UserToken");
-
-            //check if the user is logged in
-            if (uid != null)
+            try
             {
-                //get the role
-                var role = HttpContext.Session.GetInt32("_UserRole");
+                // Get uid
+                var uid = HttpContext.Session.GetString("_UserToken");
 
-                //check in the database if the user is a farmer
-                var farmer = _context.Farmers.FirstOrDefault(e => e.Id == uid);
-
-                //if the user is a farmer
-                if (farmer != null)
+                // Check if the user is logged in
+                if (uid != null)
                 {
-                    if (farmer.UserRoleId == role)
+                    // Check in the database if the user is a farmer
+                    var farmer = await _userService.GetFarmerByIdAsync(uid);
+
+                    // If the user is a farmer
+                    if (farmer != null)
                     {
-                        //set the uid
-                        HttpContext.Session.SetString("_UserToken", uid);
+                        _logger.LogInformation("Farmer found in database - Farmer Role: {FarmerRole}", farmer.UserRoleId);
                         return View();
                     }
+                    else
+                    {
+                        _logger.LogWarning("Farmer not found in database for user ID: {UserId}", uid);
+                    }
+
+                    // If the user is not a farmer
+                    return RedirectToAction("Home", "Employees");
                 }
 
-                //if the user is not a farmer
-                return RedirectToAction("Home", "Employees");
-
+                // If the user is not logged in
+                return RedirectToAction("Login", "Employees");
             }
-
-            //if the user is not logged in
-            return RedirectToAction("Login", "Employees");
-
-
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in Farmers Home action");
+                return RedirectToAction("Error", "Home");
+            }
         }
 
         // GET: Farmers/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            //ONLY EMPLOYEES CAN CREATE FARMERS
-
-            //get the uid
-            var uid = HttpContext.Session.GetString("_UserToken");
-            
-            if (uid != null)
+            try
             {
-                //check in the database if the user is an employee
-                var employee = _context.Employees.FirstOrDefault(e => e.Id == uid);
-                if (employee != null)
+                // ONLY EMPLOYEES CAN CREATE FARMERS
+
+                // Get the uid
+                var uid = HttpContext.Session.GetString("_UserToken");
+                
+                if (uid != null)
                 {
-                    //get the role
-                    var role = HttpContext.Session.GetInt32("_UserRole");
-                    if (employee.UserRoleId == role)
+                    // Check in the database if the user is an employee
+                    var employee = await _userService.GetEmployeeByIdAsync(uid);
+                    if (employee != null)
                     {
                         return View();
                     }
+                    // If the user is not an employee
+                    return RedirectToAction("Home", "Farmers");
                 }
-                //if the user is not an employee
-                return RedirectToAction("Home", "Farmers");
+                // If the user is not logged in
+                return RedirectToAction("Login", "Employees");
             }
-            //if the user is not logged in
-            return RedirectToAction("Login", "Employees");
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in Farmers Create GET action");
+                return RedirectToAction("Error", "Home");
+            }
         }
 
         // POST: Farmers/Create
@@ -96,176 +111,149 @@ namespace PROG7311_P2.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Name,Address,Phone,Email")] Farmer farmer)
         {
-            if (ModelState.IsValid)
+            try
             {
-                //create a new instance of the validation methods class
-                ValidationMethods validation = new ValidationMethods();
+                if (ModelState.IsValid)
+                {
+                    // Create a new instance of the validation methods class
+                    ValidationMethods validation = new ValidationMethods();
 
-                //check if the email is taken
-                if (IsEmailTaken(farmer.Email).Result == true)
-                {
-                    ModelState.AddModelError("Email", "Email is already taken.");
-                }
-                //check if the email is valid
-                else if (!validation.IsEmailValid(farmer.Email))
-                {
-                    ModelState.AddModelError("Email", "Email must be valid.");
-                }
-                //check if the phone number is valid
-                else if (!validation.IsPhoneNumberValid(farmer.Phone))
-                {
-                    ModelState.AddModelError("Phone", "Phone number must be 10 digits long.");
-                }
-                //check if the name is valid
-                else if (!validation.OnlyLetters(farmer.Name))
-                {
-                    ModelState.AddModelError("Name", "Name must only contain letters.");
-                }
-                //check if the email is in the organization
-                else if (!validation.IsEmailInOrganization(farmer.Email))
-                {
-                    ModelState.AddModelError("Email", "Email must be in the organization.");
-                }
-                else
-                {
-                    //For now the password will be set to Password1* until the user logs in and changes it
-
-                    //PasswordGenerator passwordGenerator = new PasswordGenerator();
-                    string password = "Password1*";
-
-                    //create a new instance of the firebase auth class
-                    FirebaseAdmin.Auth.FirebaseAuth auth = FirebaseAdmin.Auth.FirebaseAuth.DefaultInstance;
-
-                    //create a new user
-                    var user = new UserRecordArgs
+                    // Check if the email is taken
+                    if (await _userService.FarmerExistsAsync(farmer.Email))
                     {
-                        Email = farmer.Email,
-                        Password = password,
-                        //set the email verified to false so that the last login will be null
-                        //this will force the user to change their password when they log in
-                        EmailVerified = false,
-                        Disabled = false
-                    };
-                    
-                    //create the user
-                    var createdUser = await auth.CreateUserAsync(user);
-
-                    //get the uid of the created user
-                    var userUid = createdUser.Uid;
-
-                    //create a new farmer
-                    Farmer newFarmer = new()
+                        ModelState.AddModelError("Email", "Email is already taken.");
+                    }
+                    // Check if the email is valid
+                    else if (!validation.IsEmailValid(farmer.Email))
                     {
-                        Id = userUid,
-                        Name = farmer.Name,
-                        Address = farmer.Address,
-                        Phone = farmer.Phone,
-                        Email = farmer.Email,
-                        UserRoleId = (int) Roles.Farmer,
-                    };
+                        ModelState.AddModelError("Email", "Email must be valid.");
+                    }
+                    // Check if the phone number is valid
+                    else if (!validation.IsPhoneNumberValid(farmer.Phone))
+                    {
+                        ModelState.AddModelError("Phone", "Phone number must be 10 digits long.");
+                    }
+                    // Check if the name is valid
+                    else if (!validation.OnlyLetters(farmer.Name))
+                    {
+                        ModelState.AddModelError("Name", "Name must only contain letters.");
+                    }
+                    // Check if the email is in the organization
+                    else if (!validation.IsEmailInOrganization(farmer.Email))
+                    {
+                        ModelState.AddModelError("Email", "Email must be in the organization.");
+                    }
+                    else
+                    {
+                        // For now the password will be set to Password1* until the user logs in and changes it
+                        string password = "Password1*";
 
-                    //add the farmer to the database
-                    _context.Farmers.Add(newFarmer);
-                    await _context.SaveChangesAsync();
+                        // Create a new user using client-side authentication (same as employee creation)
+                        var fbAuthLink = await _authUser.CreateUserWithEmailAndPasswordAsync(farmer.Email, password);
 
-                    return RedirectToAction("Home", "Employees");
-                }              
+                        // Get the uid of the created user
+                        var userUid = fbAuthLink.User.LocalId;
+
+                        if (userUid != null)
+                        {
+                            // Create a new farmer
+                            Farmer newFarmer = new()
+                            {
+                                Id = userUid,
+                                Name = farmer.Name,
+                                Address = farmer.Address,
+                                Phone = farmer.Phone,
+                                Email = farmer.Email,
+                                UserRoleId = (int) Roles.Farmer,
+                            };
+
+                            // Add the farmer to the database
+                            await _userService.AddFarmerAsync(newFarmer);
+
+                            _logger.LogInformation("Farmer created successfully: {FarmerName} with ID {FarmerId}", farmer.Name, userUid);
+                            return RedirectToAction("Home", "Employees");
+                        }
+                    }              
+                }
             }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating farmer: {FarmerName}", farmer.Name);
+                ModelState.AddModelError("", "An error occurred while creating the farmer. Please try again.");
+            }
+            
             return View(farmer);
         }
 
         [HttpGet]
-        public IActionResult ChangePassword()
+        public async Task<IActionResult> ChangePassword()
         {
-            //get uid
-            var uid = HttpContext.Session.GetString("_UserToken");
-            if (uid != null)
+            try
             {
-                //get role
-                var role = HttpContext.Session.GetInt32("_UserRole");
-
-                //check if the user is a farmer
-                var farmer = _context.Farmers.FirstOrDefault(e => e.Id == uid);
-                if(farmer != null)
+                // Get uid
+                var uid = HttpContext.Session.GetString("_UserToken");
+                if (uid != null)
                 {
-                    if (farmer.UserRoleId == role)
+                    // Check if the user is a farmer
+                    var farmer = await _userService.GetFarmerByIdAsync(uid);
+                    if (farmer != null)
                     {
                         return View();
                     }
+                    return RedirectToAction("Home", "Employees");
                 }
-                return RedirectToAction("Home", "Employees");
+                return RedirectToAction("Login", "Employees");
             }
-            return RedirectToAction("Login", "Employees");
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in ChangePassword GET action");
+                return RedirectToAction("Error", "Home");
+            }
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangePassword(LoginRegisterModel model)
         {
-            if (ModelState.IsValid)
+            try
             {
-                //get the uid
-                var userUID = HttpContext.Session.GetString("_UserToken");
-
-                //get the user
-                var user = await auth.GetUserAsync(userUID);
-
-                ValidationMethods validation = new ValidationMethods();
-
-                //check if the password meets the requirements
-                if (!validation.PasswordRequirements(model.Password))
+                if (ModelState.IsValid)
                 {
-                    ModelState.AddModelError("Password", "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number and one special character.");
-                    return View();
-                }
-                else
-                {
-                    // Update the user's password
-                    var updateRequest = new UserRecordArgs
+                    // Create a new instance of the validation methods class
+                    ValidationMethods validation = new ValidationMethods();
+
+                    // Check if the password meets the requirements
+                    if (!validation.PasswordRequirements(model.Password))
                     {
-                        Uid = user.Uid,
-                        Password = model.Password
-                    };
-
-                    //update the user
-                    await FirebaseAdmin.Auth.FirebaseAuth.DefaultInstance.UpdateUserAsync(updateRequest);
-
-
-                    //sign the user in with their email and password
-                    var fbAuthLink = await authUser.SignInWithEmailAndPasswordAsync(user.Email, model.Password);
-
-                    //get the uid
-                    var uid = fbAuthLink.User.LocalId;
-
-                    if (uid != null)
+                        ModelState.AddModelError("Password", "Password must contain at least 8 characters, 1 uppercase, 1 lowercase, 1 number and 1 special character.");
+                    }
+                    else
                     {
-                        //set the uid
-                        HttpContext.Session.SetString("_UserToken", uid);
+                        // Get the user id from the session
+                        var uid = HttpContext.Session.GetString("_UserToken");
 
-                        //the farmer must login with their new password
-                        return RedirectToAction("Login", "Employees");
+                        // For password changes, we need to use the Admin SDK since client-side auth doesn't support password updates
+                        // This is a limitation of Firebase client-side authentication
+                        var userArgs = new UserRecordArgs
+                        {
+                            Uid = uid,
+                            Password = model.Password
+                        };
+
+                        await _auth.UpdateUserAsync(userArgs);
+
+                        _logger.LogInformation("Password changed successfully for user: {UserId}", uid);
+                        return RedirectToAction("Home", "Farmers");
                     }
                 }
-
             }
-
-            return View();
-        }
-
-        
-        public async Task<bool> IsEmailTaken(string email)
-        {
-            //check if the email is taken
-            var farmer = await _context.Farmers.FirstOrDefaultAsync(e => e.Email == email);
-            if (farmer != null)
+            catch (Exception ex)
             {
-                return true;
+                _logger.LogError(ex, "Error changing password");
+                ModelState.AddModelError("", "An error occurred while changing the password. Please try again.");
             }
-            else
-            {
-                return false;
-            }
-        }
 
+            return View(model);
+        }
     }
 }

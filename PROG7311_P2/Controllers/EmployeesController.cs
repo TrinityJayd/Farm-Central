@@ -3,120 +3,136 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Firebase.Auth;
-using Management;
+using PROG7311_P2.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using PROG7311_P2.Models;
+using PROG7311_P2.Services;
 using FirebaseAdmin.Auth;
 using Google.Apis.Auth.OAuth2;
 using FirebaseAdmin;
-using Microsoft.Identity.Client.Platforms.Features.DesktopOs.Kerberos;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 
 namespace PROG7311_P2.Controllers
 {
     public class EmployeesController : Controller
     {
-        private readonly Progp2Context _context;
-        private readonly FirebaseAuthProvider auth;
+        private readonly IUserService _userService;
+        private readonly FirebaseAuthProvider _auth;
+        private readonly ILogger<EmployeesController> _logger;
+        private readonly IConfiguration _configuration;
 
-        public EmployeesController(Progp2Context context)
+        public EmployeesController(IUserService userService, ILogger<EmployeesController> logger, IConfiguration configuration)
         {
-            _context = context;
+            _userService = userService;
+            _logger = logger;
+            _configuration = configuration;
 
-            //initialize the firebase authentication provider
-            auth = new FirebaseAuthProvider(new FirebaseConfig("AIzaSyChY24wbV9v40wp4wNzIlFM9BX1auUZQUk"));
+            // Initialize Firebase authentication provider
+            var firebaseApiKey = _configuration["Firebase:ApiKey"];
+            if (string.IsNullOrEmpty(firebaseApiKey))
+            {
+                throw new InvalidOperationException("Firebase API key is not configured");
+            }
+            _auth = new FirebaseAuthProvider(new FirebaseConfig(firebaseApiKey));
         }
 
-
-        public IActionResult Home()
+        public async Task<IActionResult> Home()
         {
-            //get the user id from the session
-            var uid = HttpContext.Session.GetString("_UserToken");
-            
-            if (uid != null)
+            try
             {
-                var role = HttpContext.Session.GetInt32("_UserRole");
-
-                //check in the database if the user is an employee
-                var employee = _context.Employees.FirstOrDefault(e => e.Id == uid);
-
-                //if the user is an employee, return the view
-                if(employee != null)
+                // Get the user id from the session
+                var uid = HttpContext.Session.GetString("_UserToken");
+                
+                if (uid == null)
                 {
-                    if (employee.UserRoleId == role)
-                    {
-                        HttpContext.Session.SetString("_UserToken", uid);
-                        return View();
-                    }
+                    // If the user is not logged in, redirect them to the login page
+                    return RedirectToAction("Login", "Employees");
                 }
 
-                //if the user is a farmer, redirect them to the farmer home page
-                return RedirectToAction("Home", "Farmers");
+                // Check if the user is an employee in the database
+                var employee = await _userService.GetEmployeeByIdAsync(uid);
+                if (employee != null)
+                {
+                    // User is logged in and is an employee, show the home page
+                    return View();
+                }
+
+                // If the user is not an employee, redirect them to the appropriate home page
+                var farmer = await _userService.GetFarmerByIdAsync(uid);
+                if (farmer != null)
+                {
+                    return RedirectToAction("Home", "Farmers");
+                }
+
+                // Unknown user, redirect to login
+                return RedirectToAction("Login", "Employees");
             }
-
-            //if the user is not logged in, redirect them to the login page
-            return RedirectToAction("Login", "Employees");
-
-
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in Employees Home action");
+                return RedirectToAction("Error", "Home");
+            }
         }
 
         public IActionResult Create()
         {
-            //if the employee registration button is clicked, log the user out and return the view
-            Logout();
             return View();
         }
+
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Name,Email,Password")] LoginRegisterModel employee)
         {
-            if (ModelState.IsValid)
+            try
             {
-                try
+                if (ModelState.IsValid)
                 {
-                    //create a new instance of the validation methods class
+                    // Create a new instance of the validation methods class
                     ValidationMethods validation = new ValidationMethods();
 
-                    //check if the email already exists and if they do, show error message
-                    if (await _context.Employees.AnyAsync(e => e.Email == employee.Email))
+                    // Check if the email already exists and if they do, show error message
+                    if (await _userService.EmployeeExistsAsync(employee.Email))
                     {
                         ModelState.AddModelError("Email", "User with this email already exists.");
                     }
-                    //check if the password meets the requirements and if it doesnt, show error message
+                    // Check if the password meets the requirements and if it doesn't, show error message
                     else if (!validation.PasswordRequirements(employee.Password))
                     {
                         ModelState.AddModelError("Password", "Password must contain at least 8 characters, 1 uppercase, 1 lowercase, 1 number and 1 special character.");
                     }
-                    //check if the email is valid and if it isnt, show error message
+                    // Check if the email is valid and if it isn't, show error message
                     else if (!validation.IsEmailValid(employee.Email))
                     {
                         ModelState.AddModelError("Email", "Email must be valid.");
                     }
-                    //check if the name only contains letters and if it doesnt, show error message
+                    // Check if the name only contains letters and if it doesn't, show error message
                     else if (!validation.OnlyLetters(employee.Name))
                     {
                         ModelState.AddModelError("Name", "Name must only contain letters.");
                     }
-                    //check if the email is in the organization and if it isnt, show error message
+                    // Check if the email is in the organization and if it isn't, show error message
                     else if (!validation.IsEmailInOrganization(employee.Email))
                     {
                         ModelState.AddModelError("Email", "Email must be in the organization.");
                     }
                     else
                     {
-                        //create a new user in firebase authentication
-                        var fbAuthLink = await auth.CreateUserWithEmailAndPasswordAsync(employee.Email, employee.Password);
+                        // Create a new user in firebase authentication
+                        var fbAuthLink = await _auth.CreateUserWithEmailAndPasswordAsync(employee.Email, employee.Password);
 
-                        //get the user id from firebase authentication
+                        // Get the user id and auth token from firebase authentication
                         var uid = fbAuthLink.User.LocalId;
+                        var authToken = fbAuthLink.FirebaseToken;
                       
                         if (uid != null)
                         {
-                            //create a new employee object excluding the password field
+                            // Create a new employee object excluding the password field
                             Employee newEmployee = new Employee
                             {
                                 Id = uid,
@@ -125,30 +141,40 @@ namespace PROG7311_P2.Controllers
                                 UserRoleId = (int) Roles.Employee
                             };
 
-                            //add the new employee to the database
-                            _context.Employees.Add(newEmployee);
-                            await _context.SaveChangesAsync();
+                            // Add the new employee to the database
+                            await _userService.AddEmployeeAsync(newEmployee);
 
-                            return RedirectToAction("Login", "Employees");
+                            // Set the session data to log them in immediately
+                            HttpContext.Session.SetString("_UserToken", uid);
+                            HttpContext.Session.SetString("_UserEmail", employee.Email);
+                            HttpContext.Session.SetString("_AuthToken", authToken);
+                            HttpContext.Session.SetInt32("_UserRole", (int) Roles.Employee);
+                            
+                            _logger.LogInformation("Employee created and logged in: {Email}", employee.Email);
+                            return RedirectToAction("Home", "Employees");
                         }
                     }
-
                 }
-                catch (Firebase.Auth.FirebaseAuthException ex)
-                {
-                    //Code Attribution
-                    //Title: How to Integrate Firebase in ASP NET Core MVC
-                    //https://www.freecodespot.com/blog/firebase-in-asp-net-core-mvc/#II_Create_and_Setup_a_new_ASPNET_Core_MVC_Application
-                    var firebaseEx = JsonConvert.DeserializeObject<FirebaseError>(ex.ResponseData);
-                    ModelState.AddModelError(String.Empty, firebaseEx.Error.Message);
-                    return View(employee);
-                }
+            }
+            catch (Firebase.Auth.FirebaseAuthException ex)
+            {
+                // Code Attribution
+                // Title: How to Integrate Firebase in ASP NET Core MVC
+                // https://www.freecodespot.com/blog/firebase-in-asp-net-core-mvc/#II_Create_and_Setup_a_new_ASPNET_Core_MVC_Application
+                var firebaseEx = JsonConvert.DeserializeObject<FirebaseError>(ex.ResponseData);
+                ModelState.AddModelError(String.Empty, firebaseEx.Error.Message);
+                _logger.LogError(ex, "Firebase authentication error during employee creation");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating employee: {EmployeeName}", employee.Name);
+                ModelState.AddModelError("", "An error occurred while creating the employee. Please try again.");
             }
 
             return View(employee);
         }
 
-        //Login
+        // Login
         public IActionResult Login()
         {
             return View();
@@ -158,135 +184,94 @@ namespace PROG7311_P2.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login([Bind("Email,Password")] LoginRegisterModel user)
         {
-            if (ModelState.IsValid)
+            try
             {
-                try
+                if (ModelState.IsValid)
                 {
-                    //get the employee from the database
-                    var employee = await _context.Employees.FirstOrDefaultAsync(e => e.Email == user.Email);
+                    // Get the employee from the database
+                    var employee = await _userService.GetEmployeeByEmailAsync(user.Email);
 
-                    //get the farmer from the database
-                    var farmer = await _context.Farmers.FirstOrDefaultAsync(f => f.Email == user.Email);
+                    // Get the farmer from the database
+                    var farmer = await _userService.GetFarmerByEmailAsync(user.Email);
 
-                    //if the employee exists, log them in
+                    // If the employee exists, log them in
                     if (employee != null)
                     {
-                        //Code Attribution
-                        //Title: How to Integrate Firebase in ASP NET Core MVC
-                        //https://www.freecodespot.com/blog/firebase-in-asp-net-core-mvc/#II_Create_and_Setup_a_new_ASPNET_Core_MVC_Application
+                        // Code Attribution
+                        // Title: How to Integrate Firebase in ASP NET Core MVC
+                        // https://www.freecodespot.com/blog/firebase-in-asp-net-core-mvc/#II_Create_and_Setup_a_new_ASPNET_Core_MVC_Application
 
-                        //log in an existing user
-                        var fbAuthLink = await auth
-                                        .SignInWithEmailAndPasswordAsync(user.Email, user.Password);
+                        // Log in an existing user
+                        var fbAuthLink = await _auth.SignInWithEmailAndPasswordAsync(user.Email, user.Password);
                         var uid = fbAuthLink.User.LocalId;
+                        var authToken = fbAuthLink.FirebaseToken; // Get the authentication token
 
                         if (uid != null)
                         {
-                            //set the user id to the logged in user
+                            // Set the user id to the logged in user
                             HttpContext.Session.SetString("_UserToken", uid);
+                            HttpContext.Session.SetString("_UserEmail", user.Email);
+                            HttpContext.Session.SetString("_AuthToken", authToken); // Store the auth token
                             
-                            //set the user role to the logged in user
+                            // Set the user role to the logged in user
                             HttpContext.Session.SetInt32("_UserRole", (int) Roles.Employee);
+                            
+                            _logger.LogInformation("Employee logged in successfully: {Email}", user.Email);
                             return RedirectToAction("Home", "Employees");
                         }
                     }
-                    //if the farmer exists, log them in
+                    // If the farmer exists, log them in
                     else if (farmer != null)
                     {
-                        //Code Attribution
-                        //Title: How to Integrate Firebase in ASP NET Core MVC
-                        //https://www.freecodespot.com/blog/firebase-in-asp-net-core-mvc/#II_Create_and_Setup_a_new_ASPNET_Core_MVC_Application
+                        // Use the same client-side authentication as employees
+                        var fbAuthLink = await _auth.SignInWithEmailAndPasswordAsync(user.Email, user.Password);
+                        var uid = fbAuthLink.User.LocalId;
+                        var authToken = fbAuthLink.FirebaseToken; // Get the authentication token
 
-                        //create a new instance of the google credential class
-                        GoogleCredential credential = GoogleCredential.FromFile("prog7311-f7f97-firebase-adminsdk-k5k9q-ecac9ca3ef.json");
-
-                        //initialize the firebase app
-                        FirebaseApp firebaseApp = FirebaseApp.DefaultInstance;
-
-                        //assign credential to the default instance
-                        if (firebaseApp == null)
+                        if (uid != null)
                         {
-                            firebaseApp = FirebaseApp.Create(new AppOptions
-                            {
-                                Credential = credential,
-                            });
-                        }
-
-                        //get the firebase authentication instance
-                        FirebaseAdmin.Auth.FirebaseAuth adminAuth = FirebaseAdmin.Auth.FirebaseAuth.GetAuth(firebaseApp);
-
-                        //get the farmer user record
-                        UserRecord farmerUser = adminAuth.GetUserAsync(farmer.Id).Result;
-
-                        // Check if the user has logged in for the first time
-                        var lastLogin = farmerUser.UserMetaData.LastSignInTimestamp;
-
-                        //if they have logged in for the first time, redirect them to the change password page
-                        if (lastLogin == null)
-                        {
-                            var fbAuthLink = await auth
-                                        .SignInWithEmailAndPasswordAsync(user.Email, user.Password);
-                            var uid = fbAuthLink.User.LocalId;
-
-                            if (uid != null)
-                            {
-                                //set the user id to the logged in user
-                                HttpContext.Session.SetString("_UserToken", uid);
-
-                                //set the user role to the logged in user
-                                HttpContext.Session.SetInt32("_UserRole", (int)Roles.Farmer);
-
-                                //redirect user to change password page
-                                return RedirectToAction("ChangePassword", "Farmers");
-                            }
-                        }
-                        else
-                        {
-                            //log in an existing user
-                            var fbAuthLink = await auth
-                                            .SignInWithEmailAndPasswordAsync(user.Email, user.Password);
-                            var uid = fbAuthLink.User.LocalId;
-
-                            if (uid != null)
-                            {
-                                //set the user id to the logged in user
-                                HttpContext.Session.SetString("_UserToken", uid);
-
-                                //set the user role to the logged in user
-                                HttpContext.Session.SetInt32("_UserRole", (int)Roles.Farmer);
-                                return RedirectToAction("Home", "Farmers");
-
-                            }
+                            // Set the user id to the logged in user
+                            HttpContext.Session.SetString("_UserToken", uid);
+                            HttpContext.Session.SetString("_UserEmail", user.Email);
+                            HttpContext.Session.SetString("_AuthToken", authToken); // Store the auth token
+                            
+                            // Set the user role to the logged in user
+                            HttpContext.Session.SetInt32("_UserRole", (int) Roles.Farmer);
+                            
+                            _logger.LogInformation("Farmer logged in successfully: {Email}", user.Email);
+                            return RedirectToAction("Home", "Farmers");
                         }
                     }
-                    //if the employee and farmer do not exist, show error message
-                    else if (employee == null && farmer == null)
+                    else
                     {
-                        ModelState.AddModelError("Email", "User with this email does not exist.");
+                        ModelState.AddModelError("Email", "Invalid email or password.");
                     }
-                }
-                catch (Firebase.Auth.FirebaseAuthException ex)
-                {
-                    //Code Attribution
-                    //Title: How to Integrate Firebase in ASP NET Core MVC
-                    //https://www.freecodespot.com/blog/firebase-in-asp-net-core-mvc/#II_Create_and_Setup_a_new_ASPNET_Core_MVC_Application
-                    var firebaseEx = JsonConvert.DeserializeObject<FirebaseError>(ex.ResponseData);
-                    ModelState.AddModelError(String.Empty, firebaseEx.Error.Message);
-                    return View(user);
                 }
             }
-            
-            return View();
+            catch (Firebase.Auth.FirebaseAuthException ex)
+            {
+                // Code Attribution
+                // Title: How to Integrate Firebase in ASP NET Core MVC
+                // https://www.freecodespot.com/blog/firebase-in-asp-net-core-mvc/#II_Create_and_Setup_a_new_ASPNET_Core_MVC_Application
+                var firebaseEx = JsonConvert.DeserializeObject<FirebaseError>(ex.ResponseData);
+                ModelState.AddModelError(String.Empty, firebaseEx.Error.Message);
+                _logger.LogError(ex, "Firebase authentication error during login");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during login for user: {Email}", user.Email);
+                ModelState.AddModelError("", "An error occurred during login. Please try again.");
+            }
+
+            return View(user);
         }
 
-        //Logout
         public IActionResult Logout()
         {
-            //clear the session
+            // Clear the session
             HttpContext.Session.Clear();
+            _logger.LogInformation("User logged out");
             return RedirectToAction("Index", "Home");
         }
-
-
     }
 }

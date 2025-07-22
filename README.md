@@ -1,108 +1,98 @@
-# FarmCentral
+# Farm Central - Agricultural Management System
 
-FarmCentral is a web application that allows local farmers to work together and sell their products under one roof. It provides a platform for tracking incoming and outgoing stock and associating each item with the respective farmer. The application includes user authentication and different roles for farmers and employees. 
+Farm Central is a comprehensive web application that enables local farmers to collaborate and sell their products through a unified platform. The system provides robust inventory management, user authentication, and role-based access control for farmers and employees.
 
-Live site: [Farm Central](https://st10083735.azurewebsites.net/)
+## 🌟 Live Demo
+**Live site:** [Farm Central](https://st10083735.azurewebsites.net/)
 
-## Test Accounts
+## 🚀 Project Overview
 
-Farmer: johndoe@farmcentral.com
+Farm Central is built with modern web technologies and follows industry best practices for security, scalability, and maintainability. The application uses Firebase for authentication and real-time database operations, providing a seamless user experience with automatic data synchronization.
 
-Password: Password12*
+### Key Features
+- **Secure Authentication** - Firebase-based authentication with role-based access
+- **Real-time Database** - Firebase Realtime Database with automatic data sync
+- **Role Management** - Separate interfaces for farmers and employees
+- **Product Management** - Complete CRUD operations for agricultural products
+- **Advanced Filtering** - Filter products by farmer, date range, and product type
+- **Responsive Design** - Mobile-friendly interface using Bootstrap 5
+- **Input Validation** - Comprehensive validation and business rule enforcement
+- **Error Handling** - Graceful error management with custom exceptions
+- **Logging** - Structured logging with Serilog for monitoring and debugging
 
-Employee: trinity@farmcentral.com
+### User Roles
 
-Password: Password1*
+#### 👨‍🌾 Farmer Features
+- Product inventory management
+- Add new products with detailed information
+- View personal product listings
+- Filter products by date and type
 
-## Table of Contents
+#### 👨‍💼 Employee Features
+- Administrative dashboard
+- Farmer registration and management
+- View all products across all farmers
+- Advanced filtering and reporting
 
-- [Features](#features)
-- [Prerequisites](#prerequisites)
-- [Setup Instructions](#setup-instructions)
-- [Usage](#usage)
-- [Database](#database)
+## 🏗️ Architecture
 
-## Features
+### Design Patterns
+- **Repository Pattern** - Data access abstraction
+- **Service Layer Pattern** - Business logic separation
+- **Dependency Injection** - Loose coupling and testability
+- **MVC Pattern** - Clean separation of concerns
 
-- User Roles: The website provides two different user roles: farmer and employee. Each role has specific permissions and access to user-specific information.
-- User Authentication: Farmers and employees are required to log in to access the website's features and their respective information.
-- Farmer Database: The website maintains a database of farmers and their associated products. Farmers can manage their product inventory and information.
-- Employee Functionality: Logged-in employees have the ability to add new farmers to the database, manage the overall system, and perform administrative tasks.
-- Product Management: Logged-in farmers can add new products to their profiles in the database, update product information, and keep track of their inventory.
-- Product Filtering: Logged-in employees can view a list of all products supplied by a specific farmer and filter the displayed list based on the date range or product type.
+### Technology Stack
 
-## Prerequisites
+#### Backend
+- **.NET 8.0** - Latest .NET framework
+- **ASP.NET Core MVC** - Web application framework
+- **Firebase Realtime Database** - NoSQL cloud database
+- **Firebase Authentication** - User authentication service
+- **Serilog** - Structured logging framework
 
-To run the FarmCentral application locally, you need the following dependencies:
+#### Frontend
+- **Bootstrap 5** - Responsive CSS framework
+- **jQuery** - JavaScript library
+- **Razor Views** - Server-side templating
 
-- Visual Studio 2022
-- .NET 6.0
+## 🚀 Setup Instructions
 
-Additionally, the following NuGet packages were used in the application:
+### Prerequisites
+- **Visual Studio 2022** (or VS Code with .NET 8.0 SDK)
+- **.NET 8.0 SDK**
+- **Firebase Project** (for authentication and database)
 
-- AspNetCore.Firebase.Authentication
-- EntityFramework
-- Firebase.Auth
-- FirebaseAdmin
-- Microsoft.AspNetCore.Session
-- Microsoft.EntityFrameworkCore.Design
-- Microsoft.EntityFrameworkCore.SqlServer
-- Microsoft.EntityFrameworkCore.Tools
-- Microsoft.VisualStudio.Web.CodeGeneration.Design
+### Setup Steps
 
-## Setup Instructions
+1. **Clone the Repository**
+```bash
+git clone https://github.com/yourusername/Farm-Central.git
+cd Farm-Central
+```
 
-To set up the FarmCentral application on your local machine, follow these steps:
+2. **Firebase Setup**
+   - Create a Firebase project at [Firebase Console](https://console.firebase.google.com/)
+   - Enable Authentication and Realtime Database
+   - Download your Firebase Admin SDK JSON file
+   - Place the JSON file in the project root directory
+   - Update `appsettings.json` with your Firebase configuration
 
-1. Clone the project repository from GitHub.
-2. Open the project in Visual Studio 2022.
-3. Add your connection string in appsettings.json
-4. Add the your firebase admin json file to the PROG7311_P2 direcotry.
-5. Build the project to restore dependencies and compile the code.
-6. Run the application locally using the debugging tools provided by Visual Studio.
+3. **Build and Run**
+```bash
+dotnet restore
+dotnet build
+dotnet run
+```
 
-## Usage
+## 📝 License
 
-- User Roles:
-  - Farmer: Farmers can log in to the website, add new products to their profile, and view their own product listings.
-  - Employee: Employees can log in to the website, add new farmers to the database, and view the list of products supplied by specific farmers.
+This project is licensed under the MIT License.
 
-- Logging In:
-  - Visit the FarmCentral website in your browser.
-  - Click on the "Login" button.
-  - Enter your credentials based on the assigned user role (farmer or employee).
-  - Upon successful login, you will be redirected to the respective user dashboard.
+## 👨‍💻 Author
 
-- Adding a Farmer (Employee Only):
-  - Log in to the website as an employee.
-  - Navigate to the "Farmers" section.
-  - Click on the "Add New Farmer" button.
-  - Fill in the required information for the new farmer and submit the form.
-  - The new farmer will be added to the database.
+**Trinity** - [GitHub Profile](https://github.com/yourusername)
 
-- Adding a Product (Farmer Only):
-  - Log in to the website as a farmer.
-  - Go to your profile or product management section.
-  - Click on the "Add New Product" button.
-  - Provide the necessary details for the new product and submit the form.
-  - The new product will be associated with your profile in the database.
+---
 
-- Viewing Products Supplied by a Specific Farmer (Employee Only):
-  - Log in to the website as an employee.
-  - Navigate to the "Farmers" section.
-  - Select a specific farmer from the list.
-  - The website will display the list of products ever supplied by that farmer.
-
-- Filtering Products by Date Range or Product Type (Employee Only):
-  - Log in to the website as an employee.
-  - Navigate to the "Farmers" section.
-  - Select a specific farmer from the list.
-
-
-  - Use the available options to filter the displayed list of products by date range or product type.
-
-## Database
-
-The FarmCentral application uses an Azure SQL Database as the backend database for storing farmer and product information. 
-
-[🔝 Back to Top](#farmcentral)
+**Note:** This project was originally developed as a university assignment and has been enhanced for portfolio presentation with modern development practices, security improvements, and comprehensive documentation.

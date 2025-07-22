@@ -238,6 +238,10 @@ ClientBin/
 *.publishsettings
 orleans.codegen.cs
 
+# Firebase credentials (security)
+*-firebase-adminsdk-*.json
+prog7311-f7f97-firebase-adminsdk-k5k9q-58c86f7d95.json
+
 # Including strong name files can present a security risk
 # (https://github.com/github/gitignore/pull/2483#issue-259490424)
 #*.snk

@@ -1,363 +1,254 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
-using Management;
+using PROG7311_P2.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using PROG7311_P2.Models;
+using PROG7311_P2.Services;
 
 namespace PROG7311_P2.Controllers
 {
     public class ProductsController : Controller
     {
-        private readonly Progp2Context _context;
+        private readonly IProductService _productService;
+        private readonly IUserService _userService;
+        private readonly ILogger<ProductsController> _logger;
 
-        public ProductsController(Progp2Context context)
+        public ProductsController(IProductService productService, IUserService userService, ILogger<ProductsController> logger)
         {
-            _context = context;
+            _productService = productService;
+            _userService = userService;
+            _logger = logger;
         }
 
+        private async Task PopulateViewBagAsync()
+        {
+            try
+            {
+                // Get authentication token from session
+                var authToken = HttpContext.Session.GetString("_AuthToken");
 
+                // Get product types for the dropdown
+                var productTypes = await _productService.GetProductTypeSelectListAsync(authToken);
+                ViewBag.TypeNames = productTypes.Select(pt => pt.Text).ToList();
+
+                // Get unique farmer emails for the dropdown (for employees only)
+                var products = await _productService.GetAllProductsForEmployeeAsync(authToken);
+                var farmerEmails = products.Select(p => p.Email).Distinct().ToList();
+                ViewBag.Farmers = farmerEmails;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error populating ViewBag data");
+                // Set empty lists to prevent null reference exceptions
+                ViewBag.TypeNames = new List<string>();
+                ViewBag.Farmers = new List<string>();
+            }
+        }
 
         // GET: Products
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            ///get the uid
-            string uid = HttpContext.Session.GetString("_UserToken");
-
-            if (uid != null)
+            try
             {
-                //get the role
-                int role = (int)HttpContext.Session.GetInt32("_UserRole");
+                string uid = HttpContext.Session.GetString("_UserToken");
 
-                //check if the user is an employee
-                if (role == (int)Roles.Employee)
+                if (uid == null)
                 {
-                    //get all the products from the database
-                    return View(PopulateEmployeeFilter());
-                }
-                else
-                {
-                    //get all the farmers products from the database
-                    return View(PopulateFarmerFilter(uid));
+                    _logger.LogWarning("User not logged in, redirecting to login");
+                    return RedirectToAction("Login", "Employees");
                 }
 
-            }
-            else
-            {
-                //if the user is not logged in, redirect to the login page
+                var authToken = HttpContext.Session.GetString("_AuthToken");
+
+                // Populate ViewBag data for dropdowns
+                await PopulateViewBagAsync();
+
+                // Check if the user is an employee
+                var employee = await _userService.GetEmployeeByIdAsync(uid);
+                if (employee != null)
+                {
+                    var products = await _productService.GetAllProductsForEmployeeAsync(authToken);
+                    return View(products);
+                }
+
+                // Check if the user is a farmer
+                var farmer = await _userService.GetFarmerByIdAsync(uid);
+                if (farmer != null)
+                {
+                    var products = await _productService.GetAllProductsForFarmerAsync(farmer.Email, authToken);
+                    return View(products);
+                }
+
+                // User not found in either collection
+                _logger.LogWarning("User not found in database: {UserId}", uid);
                 return RedirectToAction("Login", "Employees");
             }
-
-
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in Products Index action");
+                return RedirectToAction("Error", "Home");
+            }
         }
 
         // GET: Products/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            //ONLY FARMERS CAN CREATE PRODUCTS
-
-            //get the uid
-            string uid = HttpContext.Session.GetString("_UserToken");
-
-            if (uid != null)
+            try
             {
-                //get the role
-                var role = HttpContext.Session.GetInt32("_UserRole");
+                string uid = HttpContext.Session.GetString("_UserToken");
 
-                //check if the user is a farmer
-                if (role == (int)Roles.Farmer)
+                if (uid == null)
                 {
-                    // Get the logged-in user's email
-                    var user = HttpContext.Session.GetString("_UserToken");
-
-                    var userEmail = _context.Farmers.Where(f => f.Id == user).FirstOrDefault().Email;
-
-                    // Create a new instance of the Product model
-                    //set the email field so that the email is already filled in
-                    //preventing manipulation of the email field
-                    Product product = new Product
-                    {
-                        Email = userEmail
-                    };
-
-                    //Add all the different names of the product types from the ProductType table to the viewbag as an IEnumerable<SelectListItem>
-                    ViewBag.ProductTypes = _context.ProductTypes.Select(p => new SelectListItem
-                    {
-                        Text = p.Type,
-                        Value = p.Type
-                    });
-
-                    return View(product);
+                    _logger.LogWarning("User not logged in, redirecting to login");
+                    return RedirectToAction("Login", "Employees");
                 }
-                return RedirectToAction("Home", "Employees");
+
+                // Check if the user is a farmer in the database
+                var farmer = await _userService.GetFarmerByIdAsync(uid);
+                if (farmer == null)
+                {
+                    _logger.LogWarning("Non-farmer user attempted to access product creation: {UserId}", uid);
+                    return RedirectToAction("Home", "Employees");
+                }
+
+                var product = new Product
+                {
+                    Email = farmer.Email
+                };
+
+                var authToken = HttpContext.Session.GetString("_AuthToken");
+                ViewBag.ProductTypes = await _productService.GetProductTypeSelectListAsync(authToken);
+                return View(product);
             }
-            return RedirectToAction("Login", "Employees");
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in Products Create GET action");
+                return RedirectToAction("Error", "Home");
+            }
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("ProductName,Quantity,Price,DateSupplied,Email")] Product product, string typeName)
         {
-            if (ModelState.IsValid)
+            // Get auth token once at the beginning
+            var authToken = HttpContext.Session.GetString("_AuthToken");
+            
+            try
             {
-                //get the typeid using the type name
-                product.TypeId = _context.ProductTypes.Where(p => p.Type == typeName).FirstOrDefault().TypeId;
-
-                // get the total number of products in the database
-                var totalProducts = _context.Products.Count();
-
-                // Create a new instance of the Product model
-                Product newProduct = new Product
-                {
-                    Id = totalProducts + 1,
-                    ProductName = product.ProductName,
-                    Quantity = product.Quantity,
-                    Price = product.Price,
-                    DateSupplied = product.DateSupplied,
-                    Email = product.Email,
-                    TypeId = product.TypeId
-                };
-
-                // Add the new product to the database
-                _context.Products.Add(newProduct);
-                await _context.SaveChangesAsync();
-                return RedirectToAction("Home", "Farmers");
-            }
-
-            return View(product);
-
-        }
-
-        //create the filter method to match the filter button
-        public IActionResult Filter(string farmer, string startDate, string endDate, string typeName)
-        {
-            //get the role
-            var role = HttpContext.Session.GetInt32("_UserRole");
-
-            //check if all the fields have been left as default
-            if ((farmer == "All" || farmer == null) && startDate == null && endDate == null && typeName == "All")
-            {
-                return RedirectToAction("Index");
-            }
-
-            //get all the products from the database
-            IEnumerable<ProductViewModel> products = from p in _context.Products
-                                                     join pt in _context.ProductTypes on p.TypeId equals pt.TypeId
-                                                     select new ProductViewModel
-                                                     {
-                                                         ProductName = p.ProductName,
-                                                         Quantity = p.Quantity,
-                                                         Price = p.Price,
-                                                         DateSupplied = p.DateSupplied,
-                                                         TypeName = pt.Type,
-                                                         Email = p.Email
-                                                     };
-
-            //if the user is an employee
-            if (role == (int)Roles.Employee)
-            {
-
-                //they will be able to filter by farmer and see what specific products they have supplied
-                if (farmer != "All")
-                {
-                    //from the products enumerable, get the products with the specific farmer email
-                    products = from p in products
-                               where p.Email == farmer
-                               select p;
-                }
-
-
-                //they will be able to filter by date and see what products were supplied on a specific date or between a range of dates
-                if (startDate != null && endDate != null)
-                {
-                    DateTime start = Convert.ToDateTime(startDate);
-                    DateTime end = Convert.ToDateTime(endDate);
-
-                    //get the products that were supplied between the start and end date
-                    products = from p in products
-                               where p.DateSupplied >= start && p.DateSupplied <= end
-                               select p;
-
-                }
-                else if (startDate != null)
-                {
-                    DateTime start = Convert.ToDateTime(startDate);
-
-                    //get the products that were supplied after the start date
-                    products = from p in products
-                               where p.DateSupplied >= start
-                               select p;
-                }
-                else if (endDate != null)
-                {
-                    DateTime end = Convert.ToDateTime(endDate);
-
-                    //get the products that were supplied before the end date
-                    products = from p in products
-                               where p.DateSupplied <= end
-                               select p;
-                }
-
-                if (typeName != "All")
-                {
-                    //get the products that are of the specific type
-                    products = from p in products
-                               where p.TypeName == typeName
-                               select p;
-
-                }
-
-                //if the products enumerable is not null
-                if (products != null)
-                {
-                    //populate the employee filter
-                    PopulateEmployeeFilter();
-                    return View("Index", products.ToList());
-                }
-            }
-            //if the user is a farmer
-            else if (role == (int)Roles.Farmer)
-            {
-                //get the uid
-                var user = HttpContext.Session.GetString("_UserToken");
-
-                //get the email of the logged in farmer
-                var userEmail = _context.Farmers.Where(f => f.Id == user).FirstOrDefault().Email;
-
-                if (startDate != null && endDate != null)
-                {
-                    DateTime start = Convert.ToDateTime(startDate);
-                    DateTime end = Convert.ToDateTime(endDate);
-
-                    //get the farmers products that were supplied between the start and end date
-                    products = from p in products
-                               where p.DateSupplied >= start && p.DateSupplied <= end && p.Email == userEmail
-                               select p;
-
-                }
-                else if (startDate != null)
-                {
-                    DateTime start = Convert.ToDateTime(startDate);
-
-                    //get the farmers products that were supplied after the start date
-                    products = from p in products
-                               where p.DateSupplied >= start && p.Email == userEmail
-                               select p;
-                }
-                else if (endDate != null)
-                {
-                    DateTime end = Convert.ToDateTime(endDate);
-
-                    //get the farmers products that were supplied before the end date
-                    products = from p in products
-                                 where p.DateSupplied <= end && p.Email == userEmail
-                                 select p;
-                }
-
+                _logger.LogInformation("Starting product creation for: {ProductName} by {Email}", product.ProductName, product.Email);
                 
-                if (typeName != "All")
+                if (ModelState.IsValid)
                 {
-                    //get the farmers products that are of the specific type
-                    products = from p in products
-                               where p.TypeName == typeName && p.Email == userEmail
-                               select p;
+                    if (string.IsNullOrEmpty(authToken))
+                    {
+                        _logger.LogError("Authentication token is null or empty");
+                        ModelState.AddModelError("", "Authentication failed. Please log in again.");
+                        ViewBag.ProductTypes = await _productService.GetProductTypeSelectListAsync(authToken);
+                        return View(product);
+                    }
+
+                    _logger.LogInformation("Creating product with type: {TypeName}", typeName);
+                    var createdProduct = await _productService.CreateProductAsync(product, typeName, authToken);
+                    _logger.LogInformation("Product created successfully: {ProductName} by {FarmerEmail}", product.ProductName, product.Email);
+                    return RedirectToAction("Home", "Farmers");
+                }
+                else
+                {
+                    _logger.LogWarning("Model state is invalid. Errors: {Errors}", 
+                        string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
                 }
 
-                //if the products enumerable is not null
-                if (products != null)
+                ViewBag.ProductTypes = await _productService.GetProductTypeSelectListAsync(authToken);
+                return View(product);
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "Product validation failed: {ProductName}", product.ProductName);
+                ModelState.AddModelError("", ex.Message);
+                ViewBag.ProductTypes = await _productService.GetProductTypeSelectListAsync(authToken);
+                return View(product);
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning(ex, "Invalid argument in product creation: {ProductName}", product.ProductName);
+                ModelState.AddModelError("", ex.Message);
+                ViewBag.ProductTypes = await _productService.GetProductTypeSelectListAsync(authToken);
+                return View(product);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error creating product: {ProductName} by {Email}", product.ProductName, product.Email);
+                ModelState.AddModelError("", "An unexpected error occurred while creating the product. Please try again.");
+                ViewBag.ProductTypes = await _productService.GetProductTypeSelectListAsync(authToken);
+                return View(product);
+            }
+        }
+
+        // POST: Products/Filter
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Filter(string farmer, string startDate, string endDate, string typeName)
+        {
+            try
+            {
+                string uid = HttpContext.Session.GetString("_UserToken");
+                if (uid == null)
                 {
-                    //populate the farmer filter
-                    PopulateFarmerFilter(user);
-                    return View("Index", products.ToList());
+                    _logger.LogWarning("User not logged in, redirecting to login");
+                    return RedirectToAction("Login", "Employees");
                 }
+
+                // Check if the user is an employee or farmer
+                var employee = await _userService.GetEmployeeByIdAsync(uid);
+                var farmerUser = await _userService.GetFarmerByIdAsync(uid);
+                
+                int role;
+                string? currentUserEmail = null;
+
+                if (employee != null)
+                {
+                    role = (int)Roles.Employee;
+                }
+                else if (farmerUser != null)
+                {
+                    role = (int)Roles.Farmer;
+                    currentUserEmail = farmerUser.Email;
+                }
+                else
+                {
+                    _logger.LogWarning("User not found in database: {UserId}", uid);
+                    return RedirectToAction("Login", "Employees");
+                }
+
+                // Check if all filters are default values
+                if ((farmer == "All" || farmer == null) && startDate == null && endDate == null && typeName == "All")
+                {
+                    return RedirectToAction("Index");
+                }
+
+                // Populate ViewBag data for dropdowns
+                await PopulateViewBagAsync();
+
+                var authToken = HttpContext.Session.GetString("_AuthToken");
+                var products = await _productService.FilterProductsAsync(farmer, startDate, endDate, typeName, role, currentUserEmail, authToken);
+                
+                _logger.LogInformation("Products filtered successfully. Filters: Farmer={Farmer}, StartDate={StartDate}, EndDate={EndDate}, Type={TypeName}", 
+                    farmer, startDate, endDate, typeName);
+
+                return View("Index", products);
             }
-          
-            return RedirectToAction("Index");
-
-        }
-
-        public IEnumerable<ProductViewModel> PopulateEmployeeFilter()
-        {
-            IEnumerable<ProductViewModel> products;
-
-            //return all products
-            products = from p in _context.Products
-                       join pt in _context.ProductTypes on p.TypeId equals pt.TypeId
-                       select new ProductViewModel
-                       {
-                           ProductName = p.ProductName,
-                           Quantity = p.Quantity,
-                           Price = p.Price,
-                           DateSupplied = p.DateSupplied,
-                           TypeName = pt.Type,
-                           Email = p.Email
-                       };
-
-            //select distinct type names of products that have been supplied
-            var typeNames = (from pt in _context.ProductTypes
-                             join p in _context.Products on pt.TypeId equals p.TypeId
-                             select pt.Type).Distinct();
-            ViewBag.TypeNames = typeNames.ToList();
-
-            //get all the farmer emails
-            var farmerEmails = _context.Farmers.Select(f => f.Email).ToList();
-            ViewBag.Farmers = farmerEmails;
-
-            return products.ToList();
-        }
-
-        public IEnumerable<ProductViewModel> PopulateFarmerFilter(string uid)
-        {
-            IEnumerable<ProductViewModel> products;
-            //get the users email
-            var userEmail = (from f in _context.Farmers
-                             where f.Id == uid
-                             select f.Email).FirstOrDefault();
-
-            //return all products that the farmer has supplied
-            products = from p in _context.Products
-                       join pt in _context.ProductTypes on p.TypeId equals pt.TypeId
-                       where p.Email == userEmail
-                       select new ProductViewModel
-                       {
-                           ProductName = p.ProductName,
-                           Quantity = p.Quantity,
-                           Price = p.Price,
-                           DateSupplied = p.DateSupplied,
-                           TypeName = pt.Type,
-                           Email = p.Email
-                       };
-
-            if (products == null)
+            catch (Exception ex)
             {
-                ViewBag.TypeNames = null;
-                return null;
+                _logger.LogError(ex, "Error filtering products");
+                return RedirectToAction("Error", "Home");
             }
-            else
-            {
-                //select distinct type names of products that they have supplied
-                var typeNames = (from pt in _context.ProductTypes
-                                 join p in _context.Products on pt.TypeId equals p.TypeId
-                                 where p.Email == userEmail
-                                 select pt.Type).Distinct();
-
-                ViewBag.TypeNames = typeNames.ToList();
-                return products.ToList();
-            }
-
-            
-
-            
         }
-
-
     }
-
 }
 
